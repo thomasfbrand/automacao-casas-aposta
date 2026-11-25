@@ -1,0 +1,4 @@
+telethon>=1.36
+playwright>=1.45
+python-dotenv>=1.0
+pytest>=8.0

@@ -1,0 +1,28 @@
+# ===== NUNCA versionar: segredos e sessões =====
+.env
+*.session
+*.session-journal
+browser_profile/
+credentials.json
+token.json
+
+# ===== Dados de execução =====
+state.sqlite3
+logs/
+inspect_out/
+teste*.log
+*.log
+
+# ===== Python / ambiente =====
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Backups antigos (mantidos no disco, fora do git) =====
+_backup_antes_prints/
+_backup_antes_reescrita/
+.harness-python
+.harness-session

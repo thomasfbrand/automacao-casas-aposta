@@ -1,0 +1,91 @@
+{
+  "_leia": "WIP=1: no máximo UMA feature com state 'active'. Só mude para 'passing' depois de rodar o comando de 'verify' e colar a saída no PROGRESS.md.",
+  "_estados": [
+    "not_started",
+    "active",
+    "blocked",
+    "passing"
+  ],
+  "features": [
+    {
+      "id": "F01",
+      "nome": "Ler e validar tips do grupo",
+      "state": "passing",
+      "verify": "pytest tests/test_parser.py -q"
+    },
+    {
+      "id": "F02",
+      "nome": "Decisões do motor (unidades, cancelamento, horário)",
+      "state": "passing",
+      "verify": "pytest tests/test_engine.py -q"
+    },
+    {
+      "id": "F03",
+      "nome": "Login na Pinnacle com código do Gmail",
+      "state": "passing",
+      "verify": "pytest tests/test_email_code.py tests/test_login_shift.py -q"
+    },
+    {
+      "id": "F04",
+      "nome": "Achar o jogo na lista ao vivo virtualizada",
+      "state": "passing",
+      "verify": "pytest tests/test_live_list.py -q"
+    },
+    {
+      "id": "F05",
+      "nome": "Monitorar odd pelo cupom e apostar",
+      "state": "passing",
+      "verify": "pytest tests/test_place_bet_mock.py -q"
+    },
+    {
+      "id": "F06",
+      "nome": "Disparo automático pelo Telegram",
+      "state": "passing",
+      "verify": "pytest tests/test_telegram_trigger.py -q"
+    },
+    {
+      "id": "F07",
+      "nome": "Navegador sob demanda + agendamento",
+      "state": "passing",
+      "verify": "pytest tests/test_lazy_driver.py -q"
+    },
+    {
+      "id": "F08",
+      "nome": "Contrato de casa (multi-casa)",
+      "state": "passing",
+      "verify": "pytest tests/test_contrato_casas.py -q"
+    },
+    {
+      "id": "F09",
+      "nome": "Regressão contra HTML real capturado",
+      "state": "passing",
+      "verify": "pytest tests/test_fixtures_reais.py -q"
+    },
+    {
+      "id": "F13",
+      "nome": "Fluxo E2E: mensagem do Telegram -> aposta gravada",
+      "state": "passing",
+      "verify": "pytest tests/test_e2e_tip_ate_aposta.py -q"
+    },
+    {
+      "id": "F10",
+      "nome": "Rodar em servidor no Brasil (nuvem)",
+      "state": "blocked",
+      "bloqueio": "usuário precisa criar a conta no provedor",
+      "verify": "ssh <servidor> 'cd pinnacle-bot && make check'"
+    },
+    {
+      "id": "F11",
+      "nome": "Casa nova: Stake",
+      "state": "blocked",
+      "bloqueio": "falta confirmar conta e tipo de login (e-mail/SMS/app)",
+      "verify": "pytest tests/test_contrato_casas.py tests/test_stake_mock.py -q"
+    },
+    {
+      "id": "F12",
+      "nome": "Notificação no celular via bot do Telegram",
+      "state": "not_started",
+      "verify": "pytest tests/test_notifier_bot.py -q"
+    }
+  ]
+}

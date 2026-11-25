@@ -1,0 +1,69 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:sans-serif;width:421px}
+.score-board{background:#123;color:#fff;padding:6px}.score-row{display:flex;justify-content:space-between}
+.section-header{background:green;color:#fff;padding:8px}.header-name{text-transform:capitalize}
+.odds{display:flex;flex-wrap:wrap;gap:6px;padding:6px}.odd-button{width:188px;height:38px}
+.odd-button.selected{background:orange}
+#nav{position:fixed;left:0;right:0;bottom:0;height:60px;background:#012;color:#fff;display:flex;justify-content:space-around;align-items:center;z-index:5}
+.slide-container{position:fixed;inset:0;z-index:10;display:none}
+.slide-container .dim{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.slide-container .panel{position:absolute;left:0;right:0;top:610px;bottom:0;background:#fff;overflow:auto}
+.panel .hdr{background:#0a2a5c;color:#fff;padding:12px;display:flex;justify-content:space-between}
+#kp button{width:60px;height:36px}
+</style></head><body>
+<div class="score-board"><div class="score-row"><div class="time-live"><span class="live-icon">AO VIVO</span>1º Tempo - 12'</div></div>
+<div class="score-row"><div class="team-name-section">Nova Caledónia</div><div class="score-section"><div class="score-column">0</div><div class="score-column">0</div><div class="score-column">0</div><div class="score-column">0</div></div></div>
+<div class="score-row"><div class="team-name-section">Ilhas Salomão</div><div class="score-section"><div class="score-column">3</div><div class="score-column">4</div><div class="score-column">1</div><div class="score-column">0</div></div></div></div>
+<div id="secs"></div><div style="height:500px"></div>
+<div id="nav"><span>Pesquisar</span><span id="navslip" onclick="openSheet()"><b id="badge"></b> Boletim De Apostas</span><span>Minhas</span></div>
+<div class="slide-container" id="sheet"><div class="dim" onclick="closeSheet(true)"></div><div class="panel">
+ <div class="hdr"><div class="footer-page-header-title"><h5>Boletim de apostas</h5><span id="cnt"></span></div><button id="hdrbtn" class="footer-page-header-btn" onclick="closeSheet(false)">v</button></div>
+ <div id="slipbody"></div></div></div>
+<div id="modal" class="ModalOverlayStyled-x" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5)">
+ <div style="background:#fff;margin:300px 30px;padding:20px"><h4>Limpar boletim de apostas</h4><p>Tem certeza que deseja remover todas as seleções?</p>
+ <button onclick="modal.style.display='none'">Cancelar</button><button onclick="modal.style.display='none';S.sel=null;render();renderSlip()">Confirmar</button></div></div>
+<script>
+const MODE = new URLSearchParams(location.search).get('mode') || 'input';
+window.S = {sel:null, stake:'', step:'slip', backdrop:0, clicksOnOdd:0, placed:null, sims:0, warn:'',
+            rejects: +(new URLSearchParams(location.search).get('reject') || 0)};
+let odds = {o275:1.970, u275:1.800, o25:1.751, u25:2.020, t25:4.430};
+function btn(key, label, odd){ const sel = S.sel===key ? ' selected':''; return `<button class="odd-button odd-button-matchup${sel} odd-up " data-k="${key}"><span>${label}</span><span>${odd.toFixed(3)}</span></button>`; }
+function section(title, inner, n){ return `<div class="renderIfVisible"><div class="section-container"><div class="section-content"><div class="section-header"><span class="header-name">${title}</span></div><div class="odds">${inner}</div></div></div></div>`; }
+function render(){
+  document.getElementById('secs').innerHTML =
+    section('1x2 - partida', btn('x1','1',2.3)+btn('x2','X',3.3)) +
+    section('handicap - partida', btn('h1','-0.25',2.04)+btn('h2','+0.25',1.75)) + '<div style="height:600px"></div>' +
+    section('acima/abaixo - partida', btn('o275','o 2.75',odds.o275)+btn('u275','u 2.75',odds.u275)+btn('o25','o 2.5',odds.o25)+btn('u25','u 2.5',odds.u25)) +
+    section('total da equipe - partida', btn('t25','o 2.5',odds.t25)+btn('t25u','u 2.5',1.168));
+  document.querySelectorAll('.odd-button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.k==='o25') S.clicksOnOdd++;
+    S.sel = (S.sel===b.dataset.k) ? null : b.dataset.k; S.stake=''; render(); renderSlip();
+    if (S.sel && new URLSearchParams(location.search).get('autoopen')) setTimeout(openSheet, 300); }));
+  document.getElementById('badge').textContent = S.sel ? '1' : '';
+}
+function renderSlip(){
+  const sb = document.getElementById('slipbody');
+  document.getElementById('hdrbtn').className = S.sel ? 'footer-page-header-btn-hide' : 'footer-page-header-btn';
+  document.getElementById('cnt').textContent = S.sel ? '1' : '';
+  if (!S.sel){ sb.innerHTML = '<p>No bet selected yet</p><p>Tap on odds to select a bet</p>'; return; }
+  if (S.step==='confirm'){ sb.innerHTML = `<div>Confirmar apostas</div><div>Você vai arriscar ${Number(S.stake).toFixed(2)} BRL para ganhar ${(Number(S.stake)*(odds.o25-1)).toFixed(2)} BRL</div><button onclick="S.sims=(S.sims||0)+1;S.step='wait';renderSlip();setTimeout(()=>{ if (S.rejects>0){S.rejects--;S.step='slip';S.warn='Odds have changed from 1.950 to 1.980.';renderSlip();} else {S.step='ok';renderSlip();} },1500)">SIM</button><button onclick="S.step='slip';renderSlip()">CANCELAR</button>`; return; }
+  if (S.step==='wait'){ sb.innerHTML = 'Please wait while your bet is being processed'; return; }
+  if (S.step==='ok'){ S.placed = S.stake; sb.innerHTML = 'Bet Accepted #987654'; return; }
+  const field = MODE==='input'
+     ? `<div data-placeholder="Aposta"><input class="single-selection-input stake" inputmode="none" id="input-x-stake" data-status="ODDS_CHANGE" data-min-stake="0.75" value="${S.stake}" oninput="S.stake=this.value;tot()"></div>`
+     : `<div class="stake" onclick="kp.style.display='block'"><span>Aposta</span> <b>${S.stake||'0'}</b></div><div id="kp" style="display:none">${[1,2,3,4,5,6,7,8,9,'.',0].map(d=>`<button onclick="S.stake+='${d}';renderSlip();kp.style.display='block'">${d}</button>`).join('')}</div>`;
+  sb.innerHTML = (S.warn ? `<div class="warning"><h4>${S.warn}</h4></div>` : '') + `<div id="bet-slip-single-selections"><div class="BetSlipSingleSelectionCardStyled-x"><div class="first-line"><a class="event-name">Nova Caledónia vs Ilhas Salomão [0-0]</a><button class="delete-icon" type="button" onclick="modal.style.display='block'"><svg data-name="delete" width=10 height=10></svg></button></div>
+    <div class="third-line"><p class="selection-name">Mais de 2.5</p><span class="odd-value">${odds.o25.toFixed(3)}</span></div>
+    <div class="fourth-line">${field}</div></div></div><div id="tot">Total Stake ${Number(S.stake||0).toFixed(2)} BRL</div><button class="btn-place-bets" type="submit" onclick="if(S.stake){S.step='confirm';renderSlip()}"><span>Fazer 1 aposta</span></button>`;
+}
+function tot(){ document.getElementById('tot').textContent = 'Total Stake ' + Number(S.stake||0).toFixed(2) + ' BRL'; }
+function openSheet(){ document.getElementById('sheet').style.display='block'; renderSlip(); }
+function closeSheet(bd){ if (bd) S.backdrop++; document.getElementById('sheet').style.display='none'; if (S.step==='ok'){S.step='slip'} }
+render(); renderSlip();
+if (new URLSearchParams(location.search).get('sheet')==='open') openSheet();
+// odds mudam e a lista é recriada o tempo todo (como na Pinnacle)
+const RISE = +(new URLSearchParams(location.search).get('rise') || 0);
+if (RISE) { odds.o25 = 1.60; setTimeout(() => { odds.o25 = 1.95; }, RISE * 1000); }
+setInterval(() => { odds.o25 = +(odds.o25 + (Math.random()-.5)*0.01).toFixed(3); render();
+  const ov = document.querySelector('#slipbody .odd-value'); if (ov) ov.textContent = odds.o25.toFixed(3); }, 350);
+</script></body></html>

@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:sans-serif}#sc{height:868px;overflow-y:auto;width:421px}
+.card{height:180px;border-bottom:1px solid #ccc}.lg{background:green;color:#fff;padding:6px}
+</style></head><body><div id="sc"><div id="inner"></div></div>
+<script>
+const games=[];for(let i=0;i<25;i++)games.push(['Time '+i+' A','Time '+i+' B']);
+games[17]=['Al-Duhail SC','Al-Arabi SC'];
+const collapsed={};
+const H=220, sc=document.getElementById('sc'), inner=document.getElementById('inner');
+inner.style.height=(games.length*H)+'px';inner.style.position='relative';
+function draw(){ // virtualização: só desenha o que está perto da tela
+  const top=sc.scrollTop, out=[];
+  games.forEach((g,i)=>{const y=i*H; if(y+H<top-100||y>top+868+100)return;
+    const body = collapsed[i] ? '' : `<div class="card"><div>2H 20'</div><div>Partida 1X2</div><div><span>${g[0]}</span><b>2</b></div><div><span>${g[1]}</span><b>0</b></div><div onclick="window.opened='${g[0]}'"><span>+ 12 &gt;</span></div></div>`;
+    out.push(`<div style="position:absolute;top:${y}px;width:100%"><div class="lg"><span>LIGA ${i} - PAIS</span><button class="ButtonCollapseStyled ${collapsed[i]?'collapsed':''}" onclick="collapsed[${i}]=!collapsed[${i}];draw()">^</button></div>${body}</div>`);});
+  inner.innerHTML=out.join('');}
+sc.addEventListener('scroll',draw);draw();
+</script></body></html>
