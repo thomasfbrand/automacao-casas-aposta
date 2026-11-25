@@ -3,8 +3,7 @@
 Robô que lê tips de over gols num grupo do Telegram e aposta sozinho numa casa de
 apostas, esperando a odd chegar ao mínimo da tip. Python 3.10+, Playwright, Telethon.
 **Ele aposta dinheiro real.** Erro aqui custa dinheiro, não só tempo.
-Casas (`CASA=` no `.env`): `pinnacle` (funcionou; site fora do ar em 25/11) e `stakecom` (driver
-pronto, **bloqueado**: a casa barra navegador automatizado — `bot/casas/stakecom/CONSTRAINTS.md`).
+Casas (`CASA=` no `.env`): `pinnacle` (funcionou; site fora do ar em 25/11) e `stakecom`.
 
 ## Comandos
 
@@ -44,7 +43,6 @@ python main.py                               # modo automático: escuta o Telegr
 | Regras das tips (formato, unidades, cancelamento) | `docs/regras-tips.md` |
 | Como motor e casa se encaixam | `docs/arquitetura.md` + `bot/casas/base.py` |
 | Armadilhas do site da Pinnacle | `bot/casas/pinnacle/CONSTRAINTS.md` |
-| Armadilhas e bloqueio da stake.com | `bot/casas/stakecom/CONSTRAINTS.md` |
 | Bugs reais já enfrentados e por que o código é assim | `docs/historico-bugs.md` |
 | Como rodar, variáveis do `.env`, agendamento | `docs/operacao.md` |
 | Níveis de teste e como criar um novo | `docs/testes.md` |

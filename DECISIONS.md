@@ -2,10 +2,7 @@
 
 Formato: **decisão** / por quê / alternativa descartada / o que isso restringe.
 
-## D1 — Playwright controlando o Chrome, não a API da casa
-A Pinnacle não oferece API pública para apostar. *Descartado:* chamar os endpoints
-internos do site (quebra a cada deploy e é mais fácil de detectar).
-*Restringe:* precisa de navegador aberto; tudo depende de HTML que pode mudar.
+## D1 — 
 
 ## D2 — Conta pessoal do Telegram (Telethon), não bot
 Bot não lê grupo de terceiro sem ser adicionado por um admin. *Descartado:* bot

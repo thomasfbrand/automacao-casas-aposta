@@ -12,10 +12,6 @@
 6. `make check` tem que passar: o teste de contrato cobre automaticamente a casa nova.
 
 **Ordem que funciona** (aprendida na Pinnacle, ver `docs/historico-bugs.md`):
-**0. a casa aceita navegador automatizado?** (5 min: Playwright abre um jogo, clica numa odd, o cupom
-carrega e não há 403 — a stake.com falhou aqui, ver `stakecom/CONSTRAINTS.md`) → mapear logado com
-capturas → escrever o driver → página simulada → teste com `DRY_RUN` no site real → aposta real
-mínima. Pular etapa custa mais tempo do que economiza.
 
 **Molde mais limpo:** `bot/casas/stakecom/` (selectors / js que só lê / parsing em Python puro / driver).
 Casa em moeda ≠ R$: declare `moeda` e recuse ligar sem `<CASA>_UNIT_VALUE` etc. (DECISIONS D13).
