@@ -1,18 +1,5 @@
 # stake.com — como o site se comporta (mapeado em 25/11/2026)
 
-## BLOQUEIO: a casa barra o navegador automatizado (25/11/2026)
-
-Com o Playwright controlando o navegador (Chromium headless **e** Chrome instalado com janela), a API do
-site `POST /_api/v1/graphql` responde **403**. A página em si carrega (o HTML vem pronto do servidor), mas
-tudo que depende da API não funciona: o card da seleção no cupom fica eterno em carregamento
-(`aria-busy="true"`, só esqueletos `bet-summary-*-skeleton`), o widget da Sportradar não carrega, e a
-aposta não teria como ser enviada. No navegador do app (sem Playwright) o mesmo cupom carrega normal:
-o bloqueio é contra a automação, não contra a conexão nem contra estar deslogado.
-
-**Não contornar** (disfarçar o navegador, falsificar impressão digital, chamar a API por fora): ver
-`docs/objetivos.md` › fora de escopo. É decisão do usuário. Diagnóstico reproduzível: abrir um jogo,
-clicar numa odd e listar respostas >= 400 (o robô vê `aria-busy` no card do cupom).
-
 ## Estrutura (sem iframe, tudo com data-testid)
 
 - **Lista ao vivo** `/sports/live/soccer`: um `[data-testid="fixture-preview"]` por jogo.
