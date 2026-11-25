@@ -1,0 +1,103 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>stake.com (simulada)</title></head>
+<body>
+<!-- Página que imita a stake.com, com a MESMA estrutura das capturas reais (tests/fixtures/stake/).
+     Servida pelo teste no lugar de https://stake.com/** (page.route). Comportamento escolhido por window.MOCK:
+       logged       true = sem "login-link" e botão "Place Bet"; false = "Register to Bet"
+       lineAfterMs  a linha "Over 1.5" do Asian Total só aparece depois desse tempo (0 = desde o início)
+       odds         sequência de odds do Over 1.5 (troca a cada 300 ms; o botão é RECRIADO a cada troca)
+       result       "accepted" | "oddschange" | "silent" | "rejected" (o que a casa responde ao apostar)
+     Estado exposto em window.S para o teste conferir. -->
+<div data-testid="neo-top-bar"><a id="login" data-testid="login-link" href="#">Sign In</a></div>
+<main id="main"></main>
+<aside id="slip"></aside>
+<div data-testid="notification-list" id="notes"></div>
+<script>
+const M = Object.assign({logged: false, lineAfterMs: 0, odds: [1.70], result: "accepted"}, window.MOCK || {});
+const S = window.S = {sel: null, placed: null, stake: "", clicksPlace: 0, t0: Date.now(), oddIdx: 0};
+if (M.logged) document.getElementById('login').remove();
+
+const isList = /\/sports\/live\/soccer/.test(location.pathname);
+const main = document.getElementById('main');
+
+function card(id, home, away, gh, ga, minute) {
+  const slug = `/sports/soccer/international-clubs/afc-cup/${id}`;
+  return `<div data-testid="fixture-preview"><div><div class="variant-live">Live</div><span>${minute}<span>'</span></span><span>2nd half</span></div>
+    <div><a href="${slug}/sgm"></a></div>
+    <div><div role="group" aria-label="${home}"><div data-testid="competitor-item"></div><a href="/pl${slug}"><span>${home}</span></a></div>
+         <div role="group" aria-label="${away}"><div data-testid="competitor-item"></div><a href="/pl${slug}"><span>${away}</span></a></div></div>
+    <div><span data-testid="score-ticker"><span data-testid="score-ticker-item">${gh}</span></span>
+         <span data-testid="score-ticker"><span data-testid="score-ticker-item">${ga}</span></span></div></div>`;
+}
+
+if (isList) {
+  main.innerHTML = card('111-kuwait-sc-al-wahda-fc-uae', 'Al Kuwait SC', 'AL Wahda FC (UAE)', 0, 0, 60)
+                 + card('46867045-al-faisaly-jor-al-rayyan-sc', 'AL Faisaly (Jor)', 'Al Rayyan SC', 0, 1, 66);
+} else {
+  main.innerHTML = `
+  <div data-testid="fixture-scoreboard"><div data-sr-widget="match.lmtplus">
+    <span class="sr-lmt-plus-scb__s-cap">2nd</span><div class="sr-lmt-plus-scb__clock">66:10</div>
+    <div class="sr-lmt-plus-scb__result"><div class="sr-lmt-plus-scb__result-team srm-team1">0</div>:<div class="sr-lmt-plus-scb__result-team srm-team2">1</div></div>
+  </div></div>
+  <div class="secondary-accordion is-open"><div><span>Asian Total</span></div><div id="asian"></div></div>
+  <div class="secondary-accordion is-open"><div><span>Al Rayyan SC Total</span></div>
+    <div><button data-testid="fixture-outcome" aria-label="Over 1.5"><span data-testid="outcome-button-name">1.5</span><div data-testid="fixture-odds"><span>9.99</span></div></button></div></div>`;
+}
+
+function outcome(line, odd) {
+  const sel = S.sel && S.sel.line === line ? ' selected' : '';
+  return `<button data-testid="fixture-outcome" aria-label="Over ${line}" class="outcome${sel}"><span data-testid="outcome-button-name">Over ${line}</span><div data-testid="fixture-odds"><span>${odd.toFixed(2)}</span></div></button>`
+       + `<button data-testid="fixture-outcome" aria-label="Under ${line}"><span data-testid="outcome-button-name">Under ${line}</span><div data-testid="fixture-odds"><span>2.10</span></div></button>`;
+}
+function curOdd() { return M.odds[Math.min(S.oddIdx, M.odds.length - 1)]; }
+function renderMarket() {
+  const box = document.getElementById('asian'); if (!box) return;
+  const showLine = Date.now() - S.t0 >= M.lineAfterMs;
+  box.innerHTML = outcome(2.5, 2.40) + (showLine ? outcome(1.5, curOdd()) : '') + outcome(2.75, 2.90);
+  if (S.sel) S.sel.odd = S.sel.line === 1.5 ? curOdd() : S.sel.odd;
+  renderSlip();
+}
+function renderSlip() {
+  const el = document.getElementById('slip');
+  if (!S.sel) { el.innerHTML = ''; return; }
+  const btn = M.logged ? 'Place Bet' : 'Register to Bet';
+  if (document.getElementById('stakeInput')) {          // não recria o campo (o valor digitado fica)
+    el.querySelector('[data-testid="betslip-odds-payout"] span').textContent = S.sel.odd.toFixed(2);
+    return;
+  }
+  el.innerHTML = `<div><div><div class="variant-live">Live</div>
+      <a href="/sports/soccer/international-clubs/afc-cup/46867045-al-faisaly-jor-al-rayyan-sc">AL Faisaly (Jor) - Al Rayyan SC</a>
+      <button data-testid="betslip-bet-remove"></button></div>
+      <div><p><span>Over ${S.sel.line}</span></p><p>Asian Total</p></div>
+      <div data-testid="betslip-odds-payout"><span>${S.sel.odd.toFixed(2)}</span></div>
+      <label><input id="stakeInput" aria-label="Stake" data-bet-amount-active-currency="usdt" placeholder="0.00"></label>
+    <div><span>Total Stake</span><span id="total">$0.00</span></div>
+    <button id="place"><span>${btn}</span></button><div id="msg"></div></div>`;
+  el.querySelector('#stakeInput').addEventListener('input', e => { S.stake = e.target.value; el.querySelector('#total').textContent = '$' + (e.target.value || '0.00'); });
+  el.querySelector('[data-testid="betslip-bet-remove"]').addEventListener('click', () => { S.sel = null; renderSlip(); renderMarket(); });
+  el.querySelector('#place').addEventListener('click', place);
+}
+function place() {
+  S.clicksPlace++;
+  if (!M.logged) return;
+  const msg = document.getElementById('msg');
+  setTimeout(() => {
+    if (M.result === 'accepted') { S.placed = {line: S.sel.line, odd: S.sel.odd, stake: S.stake};
+      document.getElementById('notes').textContent = 'Bet placed. ID: 7f3a9c21-bb'; }
+    else if (M.result === 'oddschange') msg.textContent = 'Odds have changed. Accept new odds?';
+    else if (M.result === 'rejected') msg.textContent = 'Insufficient balance';
+    // "silent": a casa não responde nada
+  }, 700);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('#asian [data-testid="fixture-outcome"]');
+  if (!b) return;
+  const m = b.getAttribute('aria-label').match(/^Over ([\d.]+)$/);
+  if (!m) return;
+  const line = parseFloat(m[1]);
+  S.sel = {line, odd: line === 1.5 ? curOdd() : parseFloat(b.innerText.match(/\d+\.\d+$/)[0])};
+  renderSlip(); renderMarket();
+});
+if (!isList) { renderMarket(); setInterval(() => { S.oddIdx++; renderMarket(); }, 300); }
+</script>
+</body></html>

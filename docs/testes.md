@@ -10,9 +10,19 @@ Três níveis, nesta ordem. Mudança que cruza componentes **exige** o terceiro.
 | Contrato | `test_contrato_casas.py` | casa que não cumpre `bot/casas/base.py` | em qualquer lugar |
 | E2E sem navegador | `test_e2e_tip_ate_aposta.py` | defeito de fronteira entre telegram, motor, casa, avisos e banco | em qualquer lugar |
 | Do próprio harness | `test_harness.py` | contexto inchado, WIP>1, segredo versionado, handoff frouxo | em qualquer lugar |
+| stake.com | `test_stakecom_fixtures.py` (HTML real), `test_stakecom_mock.py` (`tests/stakecom_mock.html`), `test_dinheiro_por_casa.py` | leitura do site real, fluxo de aposta, US$ e teto por casa | navegador: Chromium do `.venv` |
 
-`make test` roda tudo que der. No Linux desta pasta o Chromium não instala (rede
-bloqueada), então os testes de navegador são **pulados** — rode-os no Windows.
+
+`make test` / `pytest` roda tudo **menos** os testes de navegador da Pinnacle (marcador `pinnacle`,
+fora por decisão do usuário em 25/11; rode com `pytest -m pinnacle`). No Windows do usuário o Chromium
+está instalado no `.venv`: teste de navegador pulado ali é defeito de ambiente.
+
+Testes de navegador abrem **um** Chromium por módulo e um contexto novo por teste (ver
+`test_stakecom_mock.py`): abrir um navegador por teste custa ~6 s no Windows.
+
+**Antes de escrever o driver de uma casa nova**, confira se ela aceita navegador automatizado:
+abra um jogo com o Playwright, clique numa odd e veja se o cupom carrega e se há respostas 403
+(foi assim que a stake.com foi descoberta bloqueada, depois do driver pronto).
 
 ## Como transformar uma falha real em teste (faça SEMPRE)
 

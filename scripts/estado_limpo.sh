@@ -10,7 +10,7 @@ LIXO=$(grep -rn "print(\"DEBUG\|print('DEBUG\|breakpoint()\|pdb.set_trace\|XXX T
   --include=*.py bot tools main.py 2>/dev/null | head -5)
 [ -z "$LIXO" ] && ok "sem código de depuração solto" || { erro "código de depuração:"; echo "$LIXO"; }
 
-SEGREDO=$(git ls-files | grep -E "^\.env$|\.session$|browser_profile/" | head -3)
+SEGREDO=$(git ls-files | grep -E "^\.env$|\.session$|browser_profile[^/]*/" | head -3)
 [ -z "$SEGREDO" ] && ok "nenhum segredo versionado" || { erro "segredo no git: $SEGREDO"; }
 
 SUJO=$(git status --porcelain | head -5)

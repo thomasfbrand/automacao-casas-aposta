@@ -47,6 +47,25 @@ Documentos de contexto, lista de features, verificação executável e handoff l
 seguindo "harness engineering". *Por quê:* o conhecimento estava todo no chat; sessão
 nova recomeçava do zero e repetia bugs já resolvidos.
 
+## D12 — A Stake se chama `stakecom` no código (25/11)
+O teste de contrato reprova o motor que cita nome de casa, e "stake" (valor apostado) já é variável do
+motor. *Descartado:* afrouxar o teste. *Bônus:* separa da stake.bet.br, que é outro site.
+
+## D13 — Dinheiro por casa: moeda, valores e teto do dia (25/11)
+A stake.com aposta em US$ (cripto). A casa declara `moeda`; `<CASA>_UNIT_VALUE`, `_MAX_STAKE`,
+`_DAILY_MAX_TOTAL` têm prioridade no `.env`; o teto do dia soma só a casa atual (coluna `casa` no SQLite).
+Casa com moeda ≠ R$ **não liga** sem os valores próprios. *Descartado:* converter R$→US$ por câmbio (outra
+fonte de erro, escolha do usuário). *Restringe:* casa nova em outra moeda precisa da mesma recusa.
+
+## D14 — stake.com com perfil persistente, login feito pelo usuário (25/11)
+A conta entra pelo Google, que o robô não deve automatizar. Você loga uma vez na janela; a sessão fica no
+perfil (`STAKECOM_PROFILE_DIR`, `STAKECOM_FRESH_SESSION=false`) e o robô avisa no Telegram quando cair.
+*Descartado:* e-mail+senha no `.env` (mais toques: captcha e código a cada login).
+
+## D15 — Sem técnicas para disfarçar automação na casa nova (25/11)
+O driver da stake.com não usa `humanize` nem flags que escondem o Playwright. Quando a stake.com barrou
+(403), o trabalho parou e virou decisão do usuário (`docs/objetivos.md`). *Restringe:* F11 bloqueada.
+
 ## D11 — Handoff verificado por programa, não por boa vontade (25/11)
 A instrução "atualize o PROGRESS.md" sozinha não sobrevive a uma sessão apertada.
 `tools/handoff.py` compara o PROGRESS.md com a versão do início da sessão e reprova

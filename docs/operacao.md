@@ -53,18 +53,16 @@ Hostinger KVM1 (~R$ 30/mês, datacenter em São Paulo), Vultr/Lightsail por hora
 Em servidor sem tela, rode o Chromium do Playwright sob `xvfb-run` e deixe
 `CHROME_CHANNEL` vazio.
 
-## GitHub (pendente)
+## stake.com (`CASA=stakecom`) — bloqueada por enquanto
 
-O repositório existe só no seu computador. Para ter histórico na nuvem:
+Valores em **US$**: `STAKECOM_UNIT_VALUE`, `STAKECOM_MAX_STAKE`, `STAKECOM_DAILY_MAX_TOTAL` (sem eles
+o robô não liga). Login: você entra uma vez na janela do robô (pode ser pelo Google); a sessão fica em
+`STAKECOM_PROFILE_DIR` com `STAKECOM_FRESH_SESSION=false`. Hoje a casa responde 403 para o navegador
+automatizado e o cupom não carrega: ver `bot/casas/stakecom/CONSTRAINTS.md`.
 
-1. Em github.com → **New repository** → nome `pinnacle-bot`, **Private**, sem README.
-2. No PowerShell, dentro da pasta `v2`:
-   ```powershell
-   git remote add origin https://github.com/<seu-usuario>/pinnacle-bot.git
-   git push -u origin master
-   ```
-   Na primeira vez o Windows abre o login do GitHub no navegador.
+## GitHub
 
-O `.env`, a sessão do Telegram e o perfil do Chrome ficam de fora pelo `.gitignore`;
-confira com `git ls-files | findstr .env` (não pode aparecer `.env`, só `.env.example`).
-Depois disso, quem trabalhar no repositório faz `git push` normalmente.
+Repositório: `automacao-casas-aposta`, branch `main` (o antigo `pinnacle-bot/v2` foi copiado sem
+alterações em 25/11; o histórico de 5 commits ficou lá). O `.env`, a sessão do Telegram e os perfis do
+Chrome (`browser_profile*/`) ficam de fora pelo `.gitignore`; confira com
+`git ls-files | findstr .env` (só pode aparecer `.env.example`).

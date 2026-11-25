@@ -62,3 +62,13 @@ def test_segredos_fora_do_git():
     rastreados = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True).stdout
     for proibido in (".env\n", ".session", "browser_profile/"):
         assert proibido not in rastreados, f"segredo versionado: {proibido}"
+    import re
+    perfis = re.findall(r"^browser_profile[^/\n]*/", rastreados, re.M)   # perfil de qualquer casa (sessão logada)
+    assert not perfis, f"perfil de navegador versionado: {perfis}"
+
+
+def test_perfil_de_navegador_de_qualquer_casa_fica_fora_do_git():
+    """Cada casa pode ter o seu perfil (ex.: browser_profile_stakecom/): todos guardam sessão logada."""
+    for perfil in ("browser_profile/x", "browser_profile_stakecom/x"):
+        r = subprocess.run(["git", "check-ignore", "-q", perfil], cwd=RAIZ)
+        assert r.returncode == 0, f"{perfil} NÃO está no .gitignore"

@@ -7,7 +7,9 @@ from __future__ import annotations
 
 _CASAS = {
     "pinnacle": ("bot.casas.pinnacle.driver", "PinnacleDriver"),
-    # "stake": ("bot.casas.stake.driver", "StakeDriver"),
+    # "stakecom" e não "stake": a palavra "stake" (valor apostado) já aparece no motor e o teste de contrato
+    # reprova motor que cita nome de casa. Também deixa espaço para uma futura stake.bet.br.
+    "stakecom": ("bot.casas.stakecom.driver", "StakeComDriver"),
 }
 
 

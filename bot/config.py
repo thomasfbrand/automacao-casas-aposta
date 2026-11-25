@@ -51,6 +51,9 @@ class Config:
     extra_tip_units: float
     max_stake: float
     daily_max_total: float
+    # True = UNIT_VALUE/MAX_STAKE/DAILY_MAX_TOTAL vieram de <CASA>_UNIT_VALUE etc. (valores na moeda da casa).
+    # Casa com moeda diferente de R$ exige isso, para nunca usar por engano o UNIT_VALUE em reais.
+    money_from_casa: bool
 
     dry_run: bool
 
@@ -79,21 +82,31 @@ class Config:
     @staticmethod
     def load(env_file: Optional[str] = None) -> "Config":
         load_dotenv(env_file or ".env")
+        casa = _s("CASA", "pinnacle")
+        prefixo = casa.strip().upper() + "_"
+
+        def da_casa(nome: str) -> str:
+            """'<CASA>_<NOME>' se estiver preenchido no .env, senão '<NOME>' (valor geral)."""
+            v = os.getenv(prefixo + nome)
+            return prefixo + nome if v is not None and v.strip() != "" else nome
+
+        dinheiro = ("UNIT_VALUE", "MAX_STAKE", "DAILY_MAX_TOTAL")
         return Config(
             tg_api_id=_i("TG_API_ID", 0),
             tg_api_hash=_s("TG_API_HASH"),
             tg_session=_s("TG_SESSION", "tg_session"),
             tg_channel=_s("TG_CHANNEL"),
             tg_notify=_s("TG_NOTIFY", "me"),
-            casa=_s("CASA", "pinnacle"),
+            casa=casa,
             pinnacle_user=_s("PINNACLE_USER"),
             pinnacle_pass=_s("PINNACLE_PASS"),
             gmail_user=_s("GMAIL_USER"),
             gmail_app_password=_s("GMAIL_APP_PASSWORD").replace(" ", ""),
-            unit_value=_f("UNIT_VALUE", 350.0),
+            unit_value=_f(da_casa("UNIT_VALUE"), 350.0),
             extra_tip_units=_f("EXTRA_TIP_UNITS", 0.25),
-            max_stake=_f("MAX_STAKE", 500.0),
-            daily_max_total=_f("DAILY_MAX_TOTAL", 2000.0),
+            max_stake=_f(da_casa("MAX_STAKE"), 500.0),
+            daily_max_total=_f(da_casa("DAILY_MAX_TOTAL"), 2000.0),
+            money_from_casa=all(da_casa(n) != n for n in dinheiro),
             dry_run=_b("DRY_RUN", True),
             max_tip_age_s=_i("MAX_TIP_AGE_S", 600),
             give_up_minute=_i("GIVE_UP_MINUTE", 88),
@@ -103,8 +116,8 @@ class Config:
             match_threshold=_f("MATCH_THRESHOLD", 0.70),
             chrome_channel=_s("CHROME_CHANNEL", "chrome"),
             headless=_b("HEADLESS", False),
-            profile_dir=_s("PROFILE_DIR", "browser_profile"),
-            fresh_session=_b("FRESH_SESSION", True),
+            profile_dir=_s(da_casa("PROFILE_DIR"), "browser_profile"),
+            fresh_session=_b(da_casa("FRESH_SESSION"), True),
             viewport_w=_i("VIEWPORT_W", 440),
             viewport_h=_i("VIEWPORT_H", 940),
             manual_intervention_timeout_s=_i("MANUAL_INTERVENTION_TIMEOUT_S", 600),

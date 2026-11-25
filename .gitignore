@@ -3,6 +3,7 @@
 *.session
 *.session-journal
 browser_profile/
+browser_profile_*/
 credentials.json
 token.json
 

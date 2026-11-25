@@ -3,6 +3,8 @@
 Robô que lê tips de over gols num grupo do Telegram e aposta sozinho numa casa de
 apostas, esperando a odd chegar ao mínimo da tip. Python 3.10+, Playwright, Telethon.
 **Ele aposta dinheiro real.** Erro aqui custa dinheiro, não só tempo.
+Casas (`CASA=` no `.env`): `pinnacle` (funcionou; site fora do ar em 25/11) e `stakecom` (driver
+pronto, **bloqueado**: a casa barra navegador automatizado — `bot/casas/stakecom/CONSTRAINTS.md`).
 
 ## Comandos
 
@@ -10,7 +12,8 @@ apostas, esperando a odd chegar ao mínimo da tip. Python 3.10+, Playwright, Tel
 make start                # ABRE a sessão: ambiente + estado atual + features em aberto
 make handoff              # FECHA a sessão: verifica tudo e grava o diário (reprova se faltar algo)
 make check                # verificação completa: contrato + testes + estado limpo
-make test                 # só os testes (pytest)
+make test                 # só os testes (pytest) — sem os de navegador da Pinnacle
+pytest -m pinnacle        # testes de navegador da Pinnacle (fora do padrão por ora; 2 falham, ver backlog)
 make diagnose LOG=logs/robo-2026-09-21.log   # resume um log de execução
 make tip CASA_A="Time A" CASA_B="Time B" PLACAR=1-0 ODD=1.80   # gera tip de teste
 python main.py --test-tip tip.txt            # roda UMA tip (respeita DRY_RUN)
@@ -41,6 +44,7 @@ python main.py                               # modo automático: escuta o Telegr
 | Regras das tips (formato, unidades, cancelamento) | `docs/regras-tips.md` |
 | Como motor e casa se encaixam | `docs/arquitetura.md` + `bot/casas/base.py` |
 | Armadilhas do site da Pinnacle | `bot/casas/pinnacle/CONSTRAINTS.md` |
+| Armadilhas e bloqueio da stake.com | `bot/casas/stakecom/CONSTRAINTS.md` |
 | Bugs reais já enfrentados e por que o código é assim | `docs/historico-bugs.md` |
 | Como rodar, variáveis do `.env`, agendamento | `docs/operacao.md` |
 | Níveis de teste e como criar um novo | `docs/testes.md` |
@@ -67,6 +71,9 @@ está, rode o handoff e avise o usuário.
   depois (a tela se redesenha a cada mudança de odd).
 - **Nada de testar contra o site real sem necessidade.** Existem páginas que imitam a
   Pinnacle em `tests/` e capturas de HTML real em `tests/fixtures/`. Teste primeiro ali.
-- O ambiente Linux desta pasta **não instala o navegador de teste** (rede bloqueada):
-  17 testes são pulados aqui e rodam no Windows do usuário. Isso é esperado.
+- No Windows do usuário o `.venv` deste repo tem o Chromium do Playwright: os testes de navegador
+  RODAM (não pulam). Não há `make` nem bash no PATH do PowerShell: use `.venv\Scripts\python -m pytest`
+  ou o Git Bash. Teste pulado por "sem Chromium" ali é defeito de ambiente, não "esperado".
+- **Dinheiro por casa:** cada casa declara `moeda`; `<CASA>_UNIT_VALUE/_MAX_STAKE/_DAILY_MAX_TOTAL`
+  valem sobre os gerais; casa em US$ não liga sem eles (DECISIONS D13).
 - O usuário fala português. Mensagens do robô, logs e documentos em português.

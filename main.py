@@ -37,9 +37,10 @@ async def run_telegram(cfg: Config, until: str | None = None) -> None:
     tg.register_handlers(client, entity, engine)
 
     mode = "DRY_RUN (não confirma apostas)" if cfg.dry_run else "APOSTAS REAIS"
-    await notifier.send(f"🤖 Robô no ar em modo {mode}. 1u = R$ {cfg.unit_value:.2f}. "
+    await notifier.send(f"🤖 Robô no ar em modo {mode} ({cfg.casa}). "
+                        f"1u = {getattr(driver, 'moeda', 'R$')} {cfg.unit_value:.2f}. "
                         f"Escutando: {getattr(entity, 'title', cfg.tg_channel)}. "
-                        f"A Pinnacle só abre quando chegar uma tip.")
+                        f"A casa só abre quando chegar uma tip.")
     stopper = asyncio.create_task(_stop_at(until, engine, notifier, client)) if until else None
     closer = asyncio.create_task(_idle_closer(driver, cfg.idle_close_min * 60))
     try:

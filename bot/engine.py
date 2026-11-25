@@ -73,6 +73,7 @@ class Engine:
         self.sessions: dict[str, Session] = {}
         self.bet_games: dict[str, float] = {}   # jogos já apostados nesta execução (chave -> linha)
         self.accepting = True                    # False = fora do horário: não abre tip nova (cancelamentos valem)
+        self.moeda = getattr(driver, "moeda", "R$")   # a casa diz a sua moeda; o motor só repete
 
     # ------------------------------------------------------------------ entrada de mensagens
     async def on_message(self, msg_id: int, text: str, reply_to: Optional[int] = None,
@@ -300,8 +301,8 @@ class Engine:
             min_odd = max(l.min_odd for l in pend)
             stake = stake_for(units, self.cfg.unit_value)
             balance = await self.driver.read_balance()
-            ok, why = check_limits(stake, self.cfg.max_stake, self.store.spent_today(), self.cfg.daily_max_total,
-                                   None if self.cfg.dry_run else balance)
+            ok, why = check_limits(stake, self.cfg.max_stake, self.store.spent_today(self.cfg.casa),
+                                   self.cfg.daily_max_total, None if self.cfg.dry_run else balance, self.moeda)
             if not ok:
                 for l in pend:
                     l.cancelled = True
@@ -315,13 +316,14 @@ class Engine:
             if res.status == "accepted":
                 for l in pend:
                     l.placed = True
-                self.store.add_bet(game, s.line, res.odd, res.stake or stake, "accepted", res.receipt or "")
+                self.store.add_bet(game, s.line, res.odd, res.stake or stake, "accepted", res.receipt or "",
+                                   casa=self.cfg.casa)
                 valor = f"{(res.stake or stake):.2f}".replace(".", ",")
                 await self.notify("✅ APOSTA REALIZADA\n"
                                   f"Jogo: {s.home} x {s.away}\n"
                                   f"Mercado: Mais de {s.line:g} gols\n"
                                   f"Odd: {res.odd}\n"
-                                  f"Valor: R$ {valor} ({units:g}u)\n"
+                                  f"Valor: {self.moeda} {valor} ({units:g}u)\n"
                                   f"Bilhete: #{res.receipt or '?'}")
                 self.bet_games[s.key] = s.line
                 if not s.pending():
@@ -331,8 +333,8 @@ class Engine:
             if res.status == "dry_run_ok":
                 for l in pend:
                     l.placed = True
-                self.store.add_bet(game, s.line, res.odd, stake, "dry_run", "", res.detail)
-                await self.notify(f"🧪 DRY_RUN: apostaria R$ {stake:.2f} ({units}u) em {game} over {s.line} @ {res.odd}. {res.detail}")
+                self.store.add_bet(game, s.line, res.odd, stake, "dry_run", "", res.detail, casa=self.cfg.casa)
+                await self.notify(f"🧪 DRY_RUN: apostaria {self.moeda} {stake:.2f} ({units}u) em {game} over {s.line} @ {res.odd}. {res.detail}")
                 return "continue"
             if res.status in ("odd_low", "unavailable"):
                 log.info("sem aposta agora (%s): %s", res.status, res.detail)
@@ -341,7 +343,8 @@ class Engine:
             if res.status == "unknown":
                 for l in pend:
                     l.placed = True
-                self.store.add_bet(game, s.line, res.odd, res.stake or stake, "unknown", "", res.detail)
+                self.store.add_bet(game, s.line, res.odd, res.stake or stake, "unknown", "", res.detail,
+                                   casa=self.cfg.casa)
                 await self.notify(f"❓ Não sei se a aposta entrou em {game}: {res.detail}")
                 return "stop"
             # failed

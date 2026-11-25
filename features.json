@@ -76,10 +76,11 @@
     },
     {
       "id": "F11",
-      "nome": "Casa nova: Stake",
+      "nome": "Casa nova: stake.com (CASA=stakecom)",
       "state": "blocked",
-      "bloqueio": "falta confirmar conta e tipo de login (e-mail/SMS/app)",
-      "verify": "pytest tests/test_contrato_casas.py tests/test_stake_mock.py -q"
+      "bloqueio": "a stake.com responde 403 na API para navegador controlado pelo Playwright (cupom não carrega). Não contornar: decisão do usuário. Ver bot/casas/stakecom/CONSTRAINTS.md",
+      "feito": "driver, leitura da lista/jogo/mercado/cupom, testes contra HTML real e página simulada; DRY_RUN real chegou até o cupom",
+      "verify": "pytest tests/test_contrato_casas.py tests/test_stakecom_fixtures.py tests/test_stakecom_mock.py tests/test_dinheiro_por_casa.py -q"
     },
     {
       "id": "F12",

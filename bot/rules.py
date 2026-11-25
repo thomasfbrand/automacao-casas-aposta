@@ -9,14 +9,15 @@ def stake_for(units: float, unit_value: float) -> float:
 
 
 def check_limits(stake: float, max_stake: float, spent_today: float, daily_max_total: float,
-                 balance: float | None) -> Tuple[bool, str]:
+                 balance: float | None, moeda: str = "R$") -> Tuple[bool, str]:
+    m = moeda
     if stake <= 0:
         return False, "valor da aposta zerado"
     if stake > max_stake + 1e-9:
-        return False, f"aposta de R$ {stake:.2f} passa do teto por aposta (R$ {max_stake:.2f})"
+        return False, f"aposta de {m} {stake:.2f} passa do teto por aposta ({m} {max_stake:.2f})"
     if spent_today + stake > daily_max_total + 1e-9:
-        return False, (f"aposta de R$ {stake:.2f} estouraria o teto do dia "
-                       f"(já apostado R$ {spent_today:.2f} de R$ {daily_max_total:.2f})")
+        return False, (f"aposta de {m} {stake:.2f} estouraria o teto do dia "
+                       f"(já apostado {m} {spent_today:.2f} de {m} {daily_max_total:.2f})")
     if balance is not None and stake > balance + 1e-9:
-        return False, f"saldo insuficiente (saldo R$ {balance:.2f}, aposta R$ {stake:.2f})"
+        return False, f"saldo insuficiente (saldo {m} {balance:.2f}, aposta {m} {stake:.2f})"
     return True, "ok"

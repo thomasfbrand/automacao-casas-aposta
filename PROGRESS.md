@@ -4,43 +4,44 @@
 
 ## Em uma frase
 
-O robô funciona ponta a ponta na Pinnacle (3 apostas reais aceitas em 21/09).
-O repositório acabou de ganhar git, estrutura multi-casa e harness.
+O motor é multi-casa de verdade (moeda, valores e teto por casa). O driver da stake.com está pronto e
+testado, mas **a stake.com barra o navegador automatizado** (403 na API): apostar lá está bloqueado.
 
 ## Feito e verificado
 
-- Fluxo completo na Pinnacle: lê tip → acha jogo → espera a odd → aposta → avisa.
-  Evidência: bilhetes #3127382746, #3127385565 (Aldosivi x Tucuman) e #3127405810
-  (Redditch x Warwick), todos R$ 1, gravados em `state.sqlite3`.
-- Login automático com código do Gmail; disparo automático pelo grupo do Telegram;
-  agendamento no Windows (08:00–01:00); navegador sob demanda.
-- Harness: git, `bot/casas/` com contrato, AGENTS.md, docs/, features.json, init.sh,
-  Makefile, diagnóstico de log, testes de contrato, de capturas reais e E2E.
-- Ritual de sessão verificado por programa: `make start` marca o início,
-  `make handoff` reprova PROGRESS.md desatualizado/inchado e grava `docs/diario.md`.
+- Pinnacle: fluxo completo funcionou (3 apostas reais aceitas em 21/09, bilhetes em `state.sqlite3`).
+  Site fora do ar em 25/11; testes de navegador dela fora da suíte padrão (`pytest -m pinnacle`).
+- Repositório migrado para `automacao-casas-aposta` (GitHub, branch `main`), com `.venv` próprio e
+  Chromium do Playwright instalado no Windows: os testes de navegador rodam de verdade.
+- stake.com (`CASA=stakecom`, F11): mapeada deslogada com capturas reais em `tests/fixtures/stake/`;
+  driver em `bot/casas/stakecom/` (lista ao vivo, abrir jogo pelo nome, placar Sportradar/nativo,
+  "Asian Total" sem cair no total da equipe, cupom, DRY_RUN, aposta real com recusa/odd mudada/silêncio).
+  Contra o site real em DRY_RUN: achou o jogo, leu placar/minuto/linhas/odd e pôs a seleção no cupom;
+  parou porque o cupom não carrega (API 403).
+- Motor: `moeda` vem da casa; `<CASA>_UNIT_VALUE/_MAX_STAKE/_DAILY_MAX_TOTAL/_PROFILE_DIR/_FRESH_SESSION`
+  no `.env`; teto do dia por casa (coluna `casa` no SQLite, banco antigo migra sozinho).
 
 ## Em andamento (WIP = 1)
 
-Nada ativo. Escolha UMA feature `not_started` em `features.json` antes de começar.
+Nada ativo. F11 está `blocked` (ver abaixo).
 
 ## Bloqueado / esperando o usuário
 
-- **Servidor na nuvem**: decidir entre Oracle grátis (São Paulo) e Hostinger (~R$ 30).
-  Precisa de conta e cartão do usuário. Ver `docs/operacao.md`.
-- **Stake como segunda casa**: falta o usuário dizer se tem conta e como é o login
-  (código por e-mail, SMS ou aplicativo).
-- **`UNIT_VALUE` continua 1** (R$ 1 por unidade). Só o usuário decide subir para 350.
-- **GitHub**: o repositório é local (2 commits). Falta o usuário criar o repositório
-  privado e fazer o primeiro `push` autenticado (ver docs/operacao.md › GitHub).
+- **stake.com barra automação** (D15): decidir entre (a) outra casa, (b) stake.bet.br (outro site, outra
+  proteção — testar igual antes de investir), (c) robô só AVISA no Telegram quando a odd chega e você
+  aposta à mão. Contornar a proteção está fora de escopo.
+- Não mapeado na stake.com (precisa de login e de a API responder): botão de apostar, recibo, saldo,
+  ajuste "aceitar mudança de odd".
+- **Grupo do Telegram** das tips ainda não definido (`TG_CHANNEL`).
+- Servidor na nuvem (F10) e `UNIT_VALUE` continuam como antes: decisão do usuário.
 
 ## Última verificação executada
 
 ```
-2026-11-25  make check  ->  51 passed, 25 skipped in 6.91s
+2026-11-25  make check  ->  79 passed, 28 deselected in 50.31s
 ```
 
 ## Próximo passo sugerido
 
-Rodar `make check` no Windows do usuário (lá os 17 testes de navegador rodam de
-verdade) e confirmar que o robô ainda liga depois da reorganização de pastas:
-`python main.py --test-tip tip.txt` com `DRY_RUN=true`.
+O usuário escolhe o caminho do bloqueio da stake.com. Se for outra casa: copiar o molde de
+`bot/casas/stakecom/` (é o mais limpo) e, antes de escrever driver, repetir o teste de 403 em 5 min.
